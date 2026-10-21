@@ -1,0 +1,729 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Inspeção Poço de Elevador</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+/* Layout: ficha de campo em coluna única, cabeçalho bordô fixo com resumo e atalhos, seções numeradas como na ficha impressa, cartões só para pontos e ocorrências. */
+:root{
+  --bg:#F4F2F2; --surface:#FFFFFF; --field:#FBF9F9; --ink:#241D1E; --muted:#6C6163; --line:#DCD2D3;
+  --accent:#7A1A1A; --accent-ink:#FFFFFF; --hdr-bg:#7A1A1A; --hdr-ink:#FFFFFF; --hdr-soft:#E9CFCF;
+  --sage:#A8C5B0; --sage-deep:#2F5D44; --sage-wash:#E4EEE7;
+  --warn:#7A4E00; --warn-wash:#F6E9C9; --crit:#A3231D; --crit-wash:#F8DEDB;
+  --font-display:'Barlow Semi Condensed','Arial Narrow',system-ui,sans-serif;
+  --font-body:'Source Sans 3',system-ui,-apple-system,'Segoe UI',Aptos,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#171213; --surface:#211A1B; --field:#1B1516; --ink:#F0E9E9; --muted:#AA9C9E; --line:#3A2F31;
+    --accent:#E0A0A0; --accent-ink:#2A0F0F; --hdr-bg:#3A1214; --hdr-ink:#F6E7E7; --hdr-soft:#C9A3A3;
+    --sage:#6E9A7B; --sage-deep:#9CCBAA; --sage-wash:#1F2B24;
+    --warn:#E3B55B; --warn-wash:#33290F; --crit:#F08A83; --crit-wash:#3A1B19;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#171213; --surface:#211A1B; --field:#1B1516; --ink:#F0E9E9; --muted:#AA9C9E; --line:#3A2F31;
+  --accent:#E0A0A0; --accent-ink:#2A0F0F; --hdr-bg:#3A1214; --hdr-ink:#F6E7E7; --hdr-soft:#C9A3A3;
+  --sage:#6E9A7B; --sage-deep:#9CCBAA; --sage-wash:#1F2B24;
+  --warn:#E3B55B; --warn-wash:#33290F; --crit:#F08A83; --crit-wash:#3A1B19;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 var(--font-body);padding-bottom:96px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--hdr-bg);z-index:30}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{font-family:var(--font-display);margin:0;text-wrap:balance}
+.in,.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:760px;margin:0 auto;padding-top:20px}
+
+/* cabeçalho */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--hdr-bg);color:var(--hdr-ink)}
+.top .in{max-width:760px;margin:0 auto;display:flex;gap:12px;align-items:flex-end;justify-content:space-between;padding-top:10px;padding-bottom:6px;flex-wrap:wrap}
+.eyebrow{margin:0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--hdr-soft)}
+.top h1{font-size:22px;line-height:1.1;font-weight:600}
+.stat{font-size:13px;color:var(--hdr-soft);font-variant-numeric:tabular-nums;min-width:0}
+.stat b{color:var(--hdr-ink);font-weight:700}
+.pills{display:flex;gap:6px;overflow-x:auto;padding:4px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));scrollbar-width:none;max-width:760px;margin:0 auto}
+.pills::-webkit-scrollbar{display:none}
+.pill{flex:0 0 auto;min-height:36px;padding:0 12px;border-radius:999px;border:1px solid color-mix(in srgb,var(--hdr-ink) 35%,transparent);background:transparent;color:var(--hdr-ink);font-size:14px;cursor:pointer}
+.pill[aria-current="true"]{background:var(--hdr-ink);color:var(--hdr-bg);border-color:var(--hdr-ink);font-weight:600}
+.pill:focus-visible,.btn:focus-visible,.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.top .pill:focus-visible{outline-color:var(--hdr-ink)}
+
+/* seções */
+.sec{scroll-margin-top:150px;padding-block:20px 8px;border-top:1px solid var(--line)}
+.sec:first-of-type{border-top:0;padding-top:4px}
+.sec h2{font-size:22px;font-weight:600;display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.no{display:inline-grid;place-items:center;min-width:28px;height:28px;border-radius:6px;background:var(--accent);color:var(--accent-ink);font-size:16px;font-weight:700}
+.lead{margin:0 0 14px;color:var(--muted);max-width:60ch}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.full{grid-column:1/-1}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:14px;font-weight:600;color:var(--muted);min-width:0}
+input[type=text],input[type=number],input[type=datetime-local],select,textarea{width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--field);color:var(--ink);font-size:16px;font-weight:400;min-width:0}
+textarea{resize:vertical;line-height:1.4}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.fields{display:grid;gap:12px}
+
+/* botões */
+.btn{min-height:44px;padding:0 16px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;font-weight:600}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.ghost{background:transparent}
+.btn.danger{background:var(--crit-wash);color:var(--crit);border-color:var(--crit)}
+.btn.run{background:var(--warn-wash);color:var(--warn);border-color:var(--warn)}
+.btn[disabled]{opacity:.5;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* segurança */
+.checks{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.checks label{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);cursor:pointer;min-height:48px}
+.checks input{width:24px;height:24px;flex:0 0 auto;margin:0;accent-color:var(--accent)}
+.banner{padding:12px 14px;border-radius:8px;margin-bottom:12px;font-weight:600}
+.banner.warn{background:var(--warn-wash);color:var(--warn)}
+.banner.ok{background:var(--sage-wash);color:var(--sage-deep)}
+
+/* cartões de ponto e ocorrência */
+.list{display:grid;gap:14px;margin-bottom:14px}
+.item{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:12px}
+.item>header{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.item h3{font-size:22px;font-weight:700;color:var(--accent)}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.chip{min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--field);cursor:pointer;font-size:15px}
+.chip.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.hint{font-size:13px;color:var(--muted)}
+.empty{padding:18px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);text-align:center}
+.mk{font-size:13px;color:var(--muted)}
+.mk.set{color:var(--sage-deep);font-weight:600}
+.sub{margin:22px 0 10px;font-size:18px;font-weight:600}
+
+/* fotos */
+.photos{display:grid;gap:8px}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px}
+.thumbs:empty{display:none}
+.th{position:relative;margin:0;aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--line);cursor:pointer}
+.th img{width:100%;height:100%;object-fit:cover;display:block}
+.th figcaption{position:absolute;left:4px;bottom:4px;padding:1px 6px;border-radius:4px;background:rgba(0,0,0,.65);color:#fff;font-size:12px;font-variant-numeric:tabular-nums}
+.th .x{position:absolute;inset:0;display:none;place-items:center;background:rgba(163,35,29,.88);color:#fff;border:0;font-weight:700;cursor:pointer}
+.th.armed .x{display:grid}
+.addphoto{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 16px;border:1px dashed var(--accent);border-radius:8px;color:var(--accent);font-weight:600;cursor:pointer;justify-self:start}
+.addphoto:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.slots{display:grid;gap:12px}
+.slot{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:10px}
+.slot b{font-weight:600}
+
+/* croqui */
+.plan{max-width:440px;margin:10px auto 0;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:6px}
+.plan svg{display:block;width:100%;height:auto;touch-action:manipulation;cursor:crosshair}
+
+/* fechamento */
+.origin{display:grid;gap:8px;margin:0 0 12px;padding:0;list-style:none}
+.origin label{display:flex;gap:12px;align-items:center;min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);cursor:pointer}
+.origin input{width:22px;height:22px;margin:0;accent-color:var(--accent)}
+.foot{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);display:grid;gap:10px}
+#fallback{display:none;min-height:140px;font-size:14px}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:min(92vw,520px);padding:12px 16px;border-radius:10px;background:var(--ink);color:var(--bg);font-weight:600;z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.on{opacity:1}
+.save{font-size:13px;color:var(--muted)}
+@media (max-width:380px){.grid2{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}#toast{transition:none}}
+</style>
+
+<header class="top">
+  <div class="in">
+    <div>
+      <p class="eyebrow">A2E Engenharia · ficha de campo</p>
+      <h1>Inspeção do poço de elevador</h1>
+    </div>
+    <div class="stat" id="pg" aria-live="polite"></div>
+  </div>
+  <nav class="pills" id="pills" aria-label="Seções da ficha"></nav>
+</header>
+
+<main class="wrap">
+
+<section class="sec" id="obra" data-nav="Obra">
+  <h2><span class="no">1</span>Identificação</h2>
+  <div class="grid2 fields" id="f-obra"></div>
+</section>
+
+<section class="sec" id="seguranca" data-nav="Segurança">
+  <h2><span class="no">2</span>Segurança antes de descer</h2>
+  <div class="banner warn" id="segbanner"></div>
+  <ul class="checks" id="segchecks"></ul>
+</section>
+
+<section class="sec" id="poco" data-nav="Poço">
+  <h2><span class="no">3</span>Geometria e condições gerais</h2>
+  <div class="grid2 fields" id="f-poco"></div>
+</section>
+
+<section class="sec" id="pontos" data-nav="Infiltrações">
+  <h2><span class="no">4</span>Pontos de infiltração</h2>
+  <p class="lead">Um cartão por ponto. Meça a vazão coletando a água por 1 minuto e anote o volume em mL.</p>
+  <div class="list" id="l-pontos"></div>
+  <button class="btn primary" type="button" id="add-pontos">+ Adicionar ponto</button>
+  <h3 class="sub">Teste de condensação</h3>
+  <p class="lead">Cole um quadrado de plástico transparente em trecho seco e vede as bordas. Após 24 h, água por fora indica condensação; por dentro, infiltração.</p>
+  <div class="grid2 fields" id="f-cond"></div>
+</section>
+
+<section class="sec" id="concreto" data-nav="Concreto">
+  <h2><span class="no">5</span>Estado do concreto e fissuras</h2>
+  <p class="lead">Marque as pontas das fissuras com caneta e anote se estão úmidas ou secas.</p>
+  <div class="list" id="l-conc"></div>
+  <button class="btn primary" type="button" id="add-conc">+ Adicionar ocorrência</button>
+  <h3 class="sub">Percussão e medições</h3>
+  <div class="grid2 fields" id="f-med"></div>
+</section>
+
+<section class="sec" id="fotos" data-nav="Fotos">
+  <h2><span class="no">6</span>Fotos gerais</h2>
+  <p class="lead">Mantenha o mesmo enquadramento para repetir depois do reparo. Fotos de pontos e ocorrências ficam nos próprios cartões. Toque em uma miniatura duas vezes para remover.</p>
+  <div class="slots" id="slots"></div>
+</section>
+
+<section class="sec" id="croqui" data-nav="Croqui">
+  <h2><span class="no">7</span>Croqui do poço</h2>
+  <p class="lead">Escolha o que marcar e toque na planta. A parede A fica no alto; B, C e D seguem no sentido horário. A proporção usa a largura e o comprimento informados na seção 3.</p>
+  <div class="row">
+    <label class="f" style="flex:1;min-width:200px">Marcar
+      <select id="croquiSel"></select>
+    </label>
+    <button class="btn ghost" type="button" id="croquiClear" style="align-self:flex-end">Limpar marca</button>
+  </div>
+  <div class="plan" id="plan"></div>
+</section>
+
+<section class="sec" id="sintese" data-nav="Síntese">
+  <h2><span class="no">8</span>Síntese</h2>
+  <p class="sub" style="margin-top:0">Origem provável da água</p>
+  <ul class="origin" id="origin"></ul>
+  <div class="fields" id="f-sint"></div>
+  <div class="foot">
+    <button class="btn primary" type="button" id="btnReport" hidden>Gerar relatório com fotos</button>
+    <button class="btn" type="button" id="btnCopy">Copiar resumo em texto</button>
+    <textarea id="fallback" readonly aria-label="Resumo para copiar"></textarea>
+    <p class="save" id="saveStatus"></p>
+    <button class="btn ghost" type="button" id="btnReset">Iniciar nova inspeção</button>
+  </div>
+</section>
+
+</main>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+
+/* ---------- listas de opções ---------- */
+var TEMPO=['Sol','Nublado','Chuva fraca','Chuva forte'];
+var CHUVA=['Não choveu','Chuva fraca','Chuva forte','Chuva contínua'];
+var AGUA=['Seco','Úmido, sem lâmina','Com lâmina de água'];
+var DRENO=['Sem dreno','Dreno sem bomba','Bomba funcionando','Bomba desligada ou com defeito'];
+var ACAB=['Concreto aparente','Pintura','Argamassa','Impermeabilização anterior'];
+var SIMNAO=['Não','Sim','Não sei'];
+var COND=['Aguardando 24 h','Água por fora: condensação','Água por dentro: infiltração'];
+var INTENS=['Difusa','Gotejamento','Jorro','Mista'];
+var PAREDES=['A','B','C','D','Piso'];
+var TIPOS=['Jorro','Gotejamento',"Olho d'água",'Mancha difusa'];
+var LOCS=['Junta fria piso-parede','Junta de concretagem','Espaçador ou cone de fôrma','Fissura','Tubulação ou passagem','Outro'];
+var OCORR=['Fissura','Ninho de brita','Segregação','Armadura exposta ou oxidada','Eflorescência','Desagregação','Som cavo'];
+var SEG=[
+ 'Segunda pessoa na borda do poço durante toda a inspeção',
+ 'Energia do elevador desligada e bloqueada (cadeado e etiqueta)',
+ 'Cabine e contrapeso travados ou em posição segura',
+ 'Escada de acesso firme, ou acesso seguro ao fundo',
+ 'Iluminação suficiente e lanterna reserva',
+ 'Ventilação adequada, sem odor, gás ou água estagnada com risco',
+ 'Bomba de recalque desligada com segurança, fiação protegida da água',
+ 'Proteção contra queda no pavimento de acesso',
+ 'EPI: capacete, botas antiderrapantes, luvas e óculos'
+];
+var GER=[
+ ['g:placa','Plaqueta com obra, poço, data e hora'],
+ ['g:A','Parede A, vista geral'],['g:B','Parede B, vista geral'],
+ ['g:C','Parede C, vista geral'],['g:D','Parede D, vista geral'],
+ ['g:piso','Piso'],['g:junta','Junta piso-parede e passagens de tubulação'],
+ ['g:agua','Nível de água parada, com régua'],['g:inst','Visor do umidímetro ou da câmera térmica']
+];
+var OBRA=[
+ ['obra','Obra / edifício','text'],['end','Endereço','text'],['cliente','Cliente / contratante','text'],
+ ['poco_id','Elevador / poço (identificação)','text'],['data','Data e hora da inspeção','datetime-local'],
+ ['resp','Responsável pela inspeção','text'],['acomp','Acompanhante da obra','text'],
+ ['tempo','Tempo no dia','select',TEMPO],['chuva','Chuva nos últimos 3 dias','select',CHUVA],
+ ['equip','Equipamentos usados (câmera, lanterna, trena, fissurômetro, umidímetro, câmera térmica)','text']
+];
+var POCO=[
+ ['larg','Largura interna (m)','num'],['comp','Comprimento interno (m)','num'],
+ ['prof','Profundidade abaixo do último pavimento (m)','num'],['esp','Espessura de paredes e piso (cm)','num'],
+ ['cota','Cota do fundo, se conhecida','text'],
+ ['agua','Água parada no fundo','select',AGUA],['agua_h','Altura da lâmina (cm)','num'],
+ ['dreno','Dreno ou bomba de recalque','select',DRENO],['acab','Acabamento atual das paredes','select',ACAB],
+ ['lencol','Lençol freático conhecido (SPT, vizinhança, histórico)','text'],
+ ['marca','Marca de nível de água nas paredes (cota)','text'],
+ ['embut','Cabos, calhas ou tubulações embutidos','select',SIMNAO]
+];
+var CONDF=[['cond_trecho','Trecho testado','text'],['cond_data','Colagem do plástico','datetime-local'],['cond_res','Resultado após 24 h','select',COND]];
+var MEDF=[
+ ['perc','Percussão com martelo: áreas de som cavo (parede, altura, dimensão)','area'],
+ ['umid_eq','Umidímetro (equipamento)','text'],['umid_lei','Umidade do concreto (leitura e local)','text'],
+ ['term','Imagem térmica (observação e local)','text']
+];
+var ORIGEM=[['org_lencol','Lençol freático'],['org_junta','Junta de concretagem ou piso-parede'],['org_fissura','Fissura'],['org_tub','Tubulação ou passagem'],['org_cond','Condensação']];
+var SINTF=[
+ ['intens','Intensidade predominante','select',INTENS],
+ ['tamp','Pontos que exigem tamponamento antes do revestimento','area'],
+ ['recomp','Áreas de concreto a recompor','area'],
+ ['compl','Ensaios ou informações complementares necessários','area'],
+ ['obsg','Observações gerais','area']
+];
+
+/* ---------- estado ---------- */
+var KEY='a2e-poco-elevador-v1';
+function blank(){return {v:1,f:{},pontos:[],conc:[],np:0,nc:0,ph:0,dreno:null}}
+var S=blank();
+try{var raw=localStorage.getItem(KEY);if(raw){var o=JSON.parse(raw);if(o&&o.v===1){S=Object.assign(blank(),o);}}}catch(e){}
+var photos=[];       /* {id,owner,n,url} */
+var idb=null;
+var storageOK=true;
+
+function nowLocal(){var d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)}
+if(!S.f.data){S.f.data=nowLocal()}
+
+var st=null;
+function save(){
+  clearTimeout(st);
+  st=setTimeout(function(){
+    try{localStorage.setItem(KEY,JSON.stringify(S));storageOK=true}catch(e){storageOK=false}
+    setSaveStatus();
+  },250);
+}
+function setSaveStatus(){
+  var el=$('#saveStatus');
+  if(storageOK){var d=new Date();el.textContent='Salvo neste aparelho às '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+'. Os dados ficam só neste navegador; gere o relatório para guardar uma cópia.'}
+  else{el.textContent='Este navegador não permite salvar. Gere o relatório antes de sair da página.'}
+}
+
+/* ---------- toast ---------- */
+var tt=null;
+function toast(msg){var t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('on')},2800)}
+
+/* ---------- campos estáticos ---------- */
+function opts(list,val){return '<option value=""></option>'+list.map(function(o){return '<option'+(o===val?' selected':'')+'>'+esc(o)+'</option>'}).join('')}
+function fieldHTML(def,val,attr){
+  var k=def[0],label=def[1],type=def[2],list=def[3],cls='f',inner;
+  if(type==='num'){inner='<input type="text" inputmode="decimal" '+attr+'="'+k+'" value="'+esc(val)+'" autocomplete="off">'}
+  else if(type==='text'){cls+=' full';inner='<input type="text" '+attr+'="'+k+'" value="'+esc(val)+'" autocomplete="off">'}
+  else if(type==='datetime-local'){cls+=' full';inner='<input type="datetime-local" '+attr+'="'+k+'" value="'+esc(val)+'">'}
+  else if(type==='select'){cls+=' full';inner='<select '+attr+'="'+k+'">'+opts(list,val)+'</select>'}
+  else {cls+=' full';inner='<textarea rows="3" '+attr+'="'+k+'">'+esc(val)+'</textarea>'}
+  return '<label class="'+cls+'">'+esc(label)+inner+'</label>';
+}
+function mountFields(id,defs){
+  $('#'+id).innerHTML=defs.map(function(d){return fieldHTML(d,S.f[d[0]],'data-f')}).join('');
+}
+mountFields('f-obra',OBRA);mountFields('f-poco',POCO);mountFields('f-cond',CONDF);mountFields('f-med',MEDF);mountFields('f-sint',SINTF);
+
+$('#segchecks').innerHTML=SEG.map(function(t,i){
+  return '<li><label><input type="checkbox" data-f="seg'+i+'"'+(S.f['seg'+i]?' checked':'')+'><span>'+esc(t)+'</span></label></li>';
+}).join('');
+$('#origin').innerHTML=ORIGEM.map(function(o){
+  return '<li><label><input type="checkbox" data-f="'+o[0]+'"'+(S.f[o[0]]?' checked':'')+'><span>'+esc(o[1])+'</span></label></li>';
+}).join('');
+
+function onField(e){
+  var el=e.target;
+  if(!el||!el.getAttribute||el.getAttribute('data-f')==null)return;
+  var k=el.getAttribute('data-f');
+  S.f[k]=el.type==='checkbox'?el.checked:el.value;
+  save();updateProgress();
+  if(k==='larg'||k==='comp')renderCroqui();
+}
+document.addEventListener('input',onField);
+document.addEventListener('change',onField);
+
+/* ---------- progresso ---------- */
+function segCount(){var n=0;for(var i=0;i<SEG.length;i++){if(S.f['seg'+i])n++}return n}
+function updateProgress(){
+  var n=segCount();
+  $('#pg').innerHTML='Segurança <b>'+n+'/'+SEG.length+'</b> · Pontos <b>'+S.pontos.length+'</b> · Ocorrências <b>'+S.conc.length+'</b> · Fotos <b>'+photos.length+'</b>';
+  var b=$('#segbanner');
+  if(n===SEG.length){b.className='banner ok';b.textContent='Checklist completo. Liberado para descer.'}
+  else{b.className='banner warn';b.textContent='Faltam '+(SEG.length-n)+' itens antes de descer ao poço. Não desça sozinho.'}
+}
+
+/* ---------- fotos ---------- */
+function idbOpen(){return new Promise(function(res){
+  try{var r=indexedDB.open('a2e-poco-fotos',1);
+    r.onupgradeneeded=function(){r.result.createObjectStore('p',{keyPath:'id'})};
+    r.onsuccess=function(){res(r.result)};r.onerror=function(){res(null)};r.onblocked=function(){res(null)};
+  }catch(e){res(null)}})}
+function idbAll(){return new Promise(function(res){
+  if(!idb)return res([]);
+  try{var q=idb.transaction('p').objectStore('p').getAll();q.onsuccess=function(){res(q.result||[])};q.onerror=function(){res([])}}catch(e){res([])}})}
+function idbPut(o){if(!idb)return;try{idb.transaction('p','readwrite').objectStore('p').put(o)}catch(e){}}
+function idbDel(id){if(!idb)return;try{idb.transaction('p','readwrite').objectStore('p').delete(id)}catch(e){}}
+function idbClear(){if(!idb)return;try{idb.transaction('p','readwrite').objectStore('p').clear()}catch(e){}}
+
+function shrink(file){return new Promise(function(res,rej){
+  var u=URL.createObjectURL(file),im=new Image();
+  im.onload=function(){
+    var m=1280,w=im.naturalWidth,h=im.naturalHeight,k=Math.min(1,m/Math.max(w,h));
+    w=Math.round(w*k);h=Math.round(h*k);
+    var c=document.createElement('canvas');c.width=w;c.height=h;
+    c.getContext('2d').drawImage(im,0,0,w,h);URL.revokeObjectURL(u);
+    res(c.toDataURL('image/jpeg',0.72));
+  };
+  im.onerror=function(){URL.revokeObjectURL(u);rej(new Error('img'))};
+  im.src=u;
+})}
+
+function photoBox(owner){
+  return '<div class="photos" data-owner="'+esc(owner)+'"><div class="thumbs"></div>'+
+    '<label class="addphoto"><input type="file" accept="image/*" multiple hidden data-photo>Adicionar foto</label></div>';
+}
+function renderThumbs(box){
+  var owner=box.getAttribute('data-owner');
+  var list=photos.filter(function(p){return p.owner===owner}).sort(function(a,b){return a.n-b.n});
+  $('.thumbs',box).innerHTML=list.map(function(p){
+    return '<figure class="th" data-pid="'+p.id+'"><img src="'+p.url+'" alt="Foto F'+p.n+'"><figcaption>F'+p.n+'</figcaption><button type="button" class="x" data-del>Remover</button></figure>';
+  }).join('');
+}
+function renderAllThumbs(){$$('.photos').forEach(renderThumbs)}
+function ownerBox(owner){return $$('.photos').filter(function(b){return b.getAttribute('data-owner')===owner})[0]}
+
+var armedTimer=null;
+document.addEventListener('click',function(e){
+  var fig=e.target.closest&&e.target.closest('.th');
+  if(!fig)return;
+  var pid=fig.getAttribute('data-pid');
+  if(e.target.closest('[data-del]')){
+    var p=photos.filter(function(x){return x.id===pid})[0];
+    photos=photos.filter(function(x){return x.id!==pid});
+    idbDel(pid);
+    var box=fig.closest('.photos');if(box)renderThumbs(box);
+    save();updateProgress();toast('Foto F'+(p?p.n:'')+' removida');
+    return;
+  }
+  var was=fig.classList.contains('armed');
+  $$('.th.armed').forEach(function(x){x.classList.remove('armed')});
+  if(!was){fig.classList.add('armed');clearTimeout(armedTimer);armedTimer=setTimeout(function(){fig.classList.remove('armed')},3000)}
+});
+document.addEventListener('change',function(e){
+  var inp=e.target;
+  if(!inp||inp.getAttribute==null||inp.getAttribute('data-photo')==null)return;
+  var box=inp.closest('.photos'),owner=box.getAttribute('data-owner'),files=Array.prototype.slice.call(inp.files||[]);
+  inp.value='';
+  var chain=Promise.resolve();
+  files.forEach(function(f){
+    chain=chain.then(function(){return shrink(f)}).then(function(url){
+      S.ph++;
+      var rec={id:'f'+S.ph,owner:owner,n:S.ph,url:url};
+      photos.push(rec);idbPut(rec);
+      var b=ownerBox(owner);if(b)renderThumbs(b);
+      save();updateProgress();
+      if(!idb&&!window.__noidbWarned){window.__noidbWarned=true;toast('As fotos não ficam salvas neste navegador. Gere o relatório antes de sair.')}
+    }).catch(function(){toast('Não foi possível ler esta imagem.')});
+  });
+});
+
+/* ---------- cartões de pontos e ocorrências ---------- */
+function ownerLabel(o){
+  if(o.indexOf('g:')===0){var g=GER.filter(function(x){return x[0]===o})[0];return g?g[1]:'Foto geral'}
+  var it=S.pontos.filter(function(x){return x.id===o})[0];if(it)return 'P'+it.n+(it.tipo?' · '+it.tipo:'');
+  it=S.conc.filter(function(x){return x.id===o})[0];if(it)return 'C'+it.n+(it.oc?' · '+it.oc:'');
+  return 'item removido';
+}
+function sel(attr,key,list,val,label){
+  return '<label class="f">'+esc(label)+'<select '+attr+'="'+key+'">'+opts(list,val)+'</select></label>';
+}
+function num(attr,key,val,label){
+  return '<label class="f">'+esc(label)+'<input type="text" inputmode="decimal" '+attr+'="'+key+'" value="'+esc(val)+'" autocomplete="off"></label>';
+}
+function markSpan(it){var set=it.fx!=null;return '<span class="mk'+(set?' set':'')+'" data-mk="'+it.id+'">'+(set?'Marcado no croqui':'Sem marca no croqui')+'</span>'}
+function pontoCard(p){
+  return '<article class="item" data-kind="pontos" data-id="'+p.id+'">'+
+  '<header><h3>P'+p.n+'</h3><button type="button" class="btn ghost" data-act="del">Remover</button></header>'+
+  '<div class="seg" role="group" aria-label="Tipo de infiltração">'+TIPOS.map(function(t){return '<button type="button" class="chip'+(p.tipo===t?' on':'')+'" data-act="tipo" data-v="'+esc(t)+'">'+esc(t)+'</button>'}).join('')+'</div>'+
+  '<div class="grid2">'+sel('data-i','parede',PAREDES,p.parede,'Parede')+num('data-i','altura',p.altura,'Altura (m)')+
+  '<div class="full">'+sel('data-i','loc',LOCS,p.loc,'Localização')+'</div>'+
+  num('data-i','vazao',p.vazao,'Vazão (mL/min)')+
+  '<div style="display:flex;align-items:flex-end"><button type="button" class="btn ghost" data-act="timer" style="width:100%">Cronômetro 60 s</button></div></div>'+
+  '<label class="f">Observações<textarea rows="2" data-i="obs">'+esc(p.obs)+'</textarea></label>'+
+  photoBox(p.id)+
+  '<div class="row"><button type="button" class="btn ghost" data-act="mark">Marcar no croqui</button>'+markSpan(p)+'</div>'+
+  '</article>';
+}
+function concCard(c){
+  return '<article class="item" data-kind="conc" data-id="'+c.id+'">'+
+  '<header><h3>C'+c.n+'</h3><button type="button" class="btn ghost" data-act="del">Remover</button></header>'+
+  '<div class="grid2"><div class="full">'+sel('data-i','oc',OCORR,c.oc,'Ocorrência')+'</div>'+
+  sel('data-i','parede',PAREDES,c.parede,'Parede')+num('data-i','altura',c.altura,'Altura (m)')+
+  num('data-i','abertura',c.abertura,'Abertura (mm)')+num('data-i','compr',c.compr,'Comprimento (cm)')+'</div>'+
+  '<div class="seg" role="group" aria-label="Estado">'+['Úmida','Seca'].map(function(t){return '<button type="button" class="chip'+(c.umid===t?' on':'')+'" data-act="umid" data-v="'+t+'">'+t+'</button>'}).join('')+'</div>'+
+  '<label class="f">Observações<textarea rows="2" data-i="obs">'+esc(c.obs)+'</textarea></label>'+
+  photoBox(c.id)+
+  '<div class="row"><button type="button" class="btn ghost" data-act="mark">Marcar no croqui</button>'+markSpan(c)+'</div>'+
+  '</article>';
+}
+function renderList(kind){
+  var arr=S[kind],box=$('#l-'+kind);
+  if(!arr.length){
+    box.innerHTML='<div class="empty">'+(kind==='pontos'?'Nenhum ponto registrado. Toque em Adicionar ponto para o primeiro jorro, gotejamento ou mancha.':'Nenhuma ocorrência registrada. Toque em Adicionar ocorrência para a primeira fissura, ninho ou área de som cavo.')+'</div>';
+    return;
+  }
+  box.innerHTML=arr.map(kind==='pontos'?pontoCard:concCard).join('');
+  $$('.photos',box).forEach(renderThumbs);
+}
+function getItem(kind,id){return S[kind].filter(function(x){return x.id===id})[0]}
+function addItem(kind){
+  var n=kind==='pontos'?++S.np:++S.nc;
+  var it={id:(kind==='pontos'?'p':'c')+n,n:n};
+  S[kind].push(it);renderList(kind);save();updateProgress();renderCroqui();
+  var card=$('#l-'+kind+' .item:last-child');
+  if(card)card.scrollIntoView({block:'center'});
+}
+$('#add-pontos').addEventListener('click',function(){addItem('pontos')});
+$('#add-conc').addEventListener('click',function(){addItem('conc')});
+
+var delArm=null,delTimer=null;
+var tmr=null;
+function startTimer(btn){
+  if(tmr){
+    clearInterval(tmr.i);tmr.btn.textContent='Cronômetro 60 s';tmr.btn.classList.remove('run');
+    var same=tmr.btn===btn;tmr=null;if(same)return;
+  }
+  var s=60;btn.classList.add('run');btn.textContent='60 s · toque para parar';
+  tmr={btn:btn,i:setInterval(function(){
+    s--;
+    if(s<=0){
+      clearInterval(tmr.i);btn.classList.remove('run');btn.textContent='Tempo! Meça o volume';
+      try{if(navigator.vibrate)navigator.vibrate([200,100,200])}catch(e){}
+      tmr=null;return;
+    }
+    btn.textContent=s+' s · toque para parar';
+  },1000)};
+}
+['pontos','conc'].forEach(function(kind){
+  var box=$('#l-'+kind);
+  function onI(e){
+    var el=e.target.closest('[data-i]');if(!el)return;
+    var it=getItem(kind,el.closest('.item').getAttribute('data-id'));if(!it)return;
+    it[el.getAttribute('data-i')]=el.value;save();
+    if(el.getAttribute('data-i')==='parede'||el.getAttribute('data-i')==='tipo'||el.getAttribute('data-i')==='oc')refreshSelLabels();
+  }
+  box.addEventListener('input',onI);box.addEventListener('change',onI);
+  box.addEventListener('click',function(e){
+    var b=e.target.closest('[data-act]');if(!b)return;
+    var card=b.closest('.item');if(!card)return;
+    var id=card.getAttribute('data-id'),it=getItem(kind,id),act=b.getAttribute('data-act');
+    if(act==='tipo'||act==='umid'){
+      var f=act==='tipo'?'tipo':'umid',v=b.getAttribute('data-v');
+      it[f]=it[f]===v?'':v;
+      $$('[data-act="'+act+'"]',card).forEach(function(x){x.classList.toggle('on',it[f]===x.getAttribute('data-v'))});
+      save();refreshSelLabels();
+    }else if(act==='timer'){startTimer(b)}
+    else if(act==='mark'){
+      $('#croquiSel').value=kind+':'+id;
+      $('#croqui').scrollIntoView({block:'start'});
+      toast('Toque na planta para posicionar '+(kind==='pontos'?'P':'C')+it.n);
+    }else if(act==='del'){
+      if(delArm===b){
+        photos.filter(function(p){return p.owner===id}).forEach(function(p){idbDel(p.id)});
+        photos=photos.filter(function(p){return p.owner!==id});
+        S[kind]=S[kind].filter(function(x){return x.id!==id});
+        delArm=null;renderList(kind);save();updateProgress();renderCroqui();
+      }else{
+        if(delArm){delArm.textContent='Remover';delArm.classList.remove('danger')}
+        delArm=b;b.textContent='Confirmar remoção';b.classList.add('danger');
+        clearTimeout(delTimer);delTimer=setTimeout(function(){if(delArm===b){b.textContent='Remover';b.classList.remove('danger');delArm=null}},3000);
+      }
+    }
+  });
+});
+
+/* ---------- fotos gerais ---------- */
+$('#slots').innerHTML=GER.map(function(g){return '<div class="slot"><b>'+esc(g[1])+'</b>'+photoBox(g[0])+'</div>'}).join('');
+
+/* ---------- croqui ---------- */
+function toNum(v){var n=parseFloat(String(v==null?'':v).replace(',','.'));return isNaN(n)?0:n}
+function fmt(n){return String(Math.round(n*100)/100).replace('.',',')}
+function planRect(){
+  var L=toNum(S.f.larg),C=toNum(S.f.comp),w=200,h=200;
+  if(L>0&&C>0){if(L>=C){h=200*C/L}else{w=200*L/C}}
+  return {x:150-w/2,y:150-h/2,w:w,h:h};
+}
+function croquiTargets(){
+  var out=[];
+  S.pontos.forEach(function(p){out.push({k:'pontos:'+p.id,label:'P'+p.n+(p.tipo?' · '+p.tipo:'')+(p.parede?' · parede '+p.parede:'')})});
+  S.conc.forEach(function(c){out.push({k:'conc:'+c.id,label:'C'+c.n+(c.oc?' · '+c.oc:'')+(c.parede?' · parede '+c.parede:'')})});
+  out.push({k:'dreno',label:'Dreno ou bomba de recalque'});
+  return out;
+}
+function refreshSelLabels(){
+  var s=$('#croquiSel'),cur=s.value;
+  s.innerHTML=croquiTargets().map(function(t){return '<option value="'+esc(t.k)+'">'+esc(t.label)+'</option>'}).join('');
+  if(cur&&$$('option',s).some(function(o){return o.value===cur}))s.value=cur;
+}
+function croquiSVG(pal,live){
+  var r=planRect(),L=toNum(S.f.larg),C=toNum(S.f.comp);
+  var tx='font-family:system-ui,sans-serif;';
+  var svg='<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Croqui do poço com os pontos marcados"'+(live?' id="svg"':' width="420" height="420"')+'>';
+  svg+='<rect x="'+r.x+'" y="'+r.y+'" width="'+r.w+'" height="'+r.h+'" style="fill:'+pal.fill+';stroke:'+pal.ink+';stroke-width:3"/>';
+  svg+='<text x="150" y="'+(r.y-10)+'" text-anchor="middle" style="'+tx+'font-size:13px;font-weight:700;fill:'+pal.ink+'">A'+(L>0?' · '+fmt(L)+' m':'')+'</text>';
+  svg+='<text x="150" y="'+(r.y+r.h+22)+'" text-anchor="middle" style="'+tx+'font-size:13px;font-weight:700;fill:'+pal.ink+'">C'+(L>0?' · '+fmt(L)+' m':'')+'</text>';
+  svg+='<text x="'+(r.x+r.w+14)+'" y="150" text-anchor="middle" style="'+tx+'font-size:13px;font-weight:700;fill:'+pal.ink+'">B</text>';
+  svg+='<text x="'+(r.x-14)+'" y="150" text-anchor="middle" style="'+tx+'font-size:13px;font-weight:700;fill:'+pal.ink+'">D</text>';
+  if(C>0){
+    svg+='<text x="'+(r.x+r.w+14)+'" y="166" text-anchor="middle" style="'+tx+'font-size:11px;fill:'+pal.muted+'">'+fmt(C)+' m</text>';
+    svg+='<text x="'+(r.x-14)+'" y="166" text-anchor="middle" style="'+tx+'font-size:11px;fill:'+pal.muted+'">'+fmt(C)+' m</text>';
+  }
+  svg+='<text x="150" y="154" text-anchor="middle" style="'+tx+'font-size:11px;letter-spacing:.1em;fill:'+pal.muted+'">PISO</text>';
+  function pos(o){return {x:r.x+o.fx*r.w,y:r.y+o.fy*r.h}}
+  S.pontos.forEach(function(p){if(p.fx==null)return;var q=pos(p);
+    svg+='<circle cx="'+q.x+'" cy="'+q.y+'" r="13" style="fill:'+pal.p+';stroke:'+pal.fill+';stroke-width:2"/><text x="'+q.x+'" y="'+q.y+'" text-anchor="middle" dominant-baseline="central" style="'+tx+'font-size:11px;font-weight:700;fill:'+pal.pInk+'">P'+p.n+'</text>'});
+  S.conc.forEach(function(c){if(c.fx==null)return;var q=pos(c);
+    svg+='<rect x="'+(q.x-13)+'" y="'+(q.y-13)+'" width="26" height="26" rx="5" style="fill:'+pal.c+';stroke:'+pal.fill+';stroke-width:2"/><text x="'+q.x+'" y="'+q.y+'" text-anchor="middle" dominant-baseline="central" style="'+tx+'font-size:11px;font-weight:700;fill:'+pal.cInk+'">C'+c.n+'</text>'});
+  if(S.dreno&&S.dreno.fx!=null){var d=pos(S.dreno);
+    svg+='<polygon points="'+d.x+','+(d.y-15)+' '+(d.x+15)+','+d.y+' '+d.x+','+(d.y+15)+' '+(d.x-15)+','+d.y+'" style="fill:'+pal.d+';stroke:'+pal.fill+';stroke-width:2"/><text x="'+d.x+'" y="'+d.y+'" text-anchor="middle" dominant-baseline="central" style="'+tx+'font-size:10px;font-weight:700;fill:'+pal.dInk+'">D/B</text>'}
+  svg+='</svg>';
+  return svg;
+}
+var PAL_LIVE={ink:'var(--ink)',fill:'var(--surface)',muted:'var(--muted)',p:'var(--accent)',pInk:'var(--accent-ink)',c:'var(--sage-deep)',cInk:'var(--surface)',d:'var(--warn)',dInk:'var(--surface)'};
+var PAL_EXPORT={ink:'#241D1E',fill:'#ffffff',muted:'#6C6163',p:'#7A1A1A',pInk:'#ffffff',c:'#2F5D44',cInk:'#ffffff',d:'#7A4E00',dInk:'#ffffff'};
+function renderCroqui(){
+  refreshSelLabels();
+  $('#plan').innerHTML=croquiSVG(PAL_LIVE,true);
+  $$('[data-mk]').forEach(function(sp){
+    var id=sp.getAttribute('data-mk'),it=getItem('pontos',id)||getItem('conc',id),set=it&&it.fx!=null;
+    sp.className='mk'+(set?' set':'');sp.textContent=set?'Marcado no croqui':'Sem marca no croqui';
+  });
+}
+function selTarget(){
+  var v=$('#croquiSel').value;if(!v)return null;
+  if(v==='dreno'){if(!S.dreno)S.dreno={};return S.dreno}
+  var p=v.split(':');return getItem(p[0],p[1]);
+}
+$('#plan').addEventListener('click',function(e){
+  var svg=$('#svg');if(!svg)return;
+  var t=selTarget();if(!t){toast('Escolha o que marcar.');return}
+  var b=svg.getBoundingClientRect(),r=planRect();
+  var x=(e.clientX-b.left)/b.width*300,y=(e.clientY-b.top)/b.height*300;
+  t.fx=Math.min(1,Math.max(0,(x-r.x)/r.w));t.fy=Math.min(1,Math.max(0,(y-r.y)/r.h));
+  save();renderCroqui();
+});
+$('#croquiClear').addEventListener('click',function(){
+  var t=selTarget();if(!t)return;
+  if($('#croquiSel').value==='dreno'){S.dreno=null}else{delete t.fx;delete t.fy}
+  save();renderCroqui();
+});
+
+/* ---------- relatório e resumo ---------- */
+function fmtDT(v){if(!v)return '';var d=new Date(v);return isNaN(d.getTime())?v:d.toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})}
+function val(def){var v=S.f[def[0]];return def[2]==='datetime-local'?fmtDT(v):(v||'')}
+function photoNums(owner){return photos.filter(function(p){return p.owner===owner}).sort(function(a,b){return a.n-b.n}).map(function(p){return 'F'+p.n}).join(', ')}
+function buildReport(){
+  function kv(defs){return '<table class="kv">'+defs.map(function(d){return '<tr><th>'+esc(d[1])+'</th><td>'+(esc(val(d))||'—')+'</td></tr>'}).join('')+'</table>'}
+  var seg='<ul class="ck">'+SEG.map(function(t,i){return '<li>'+(S.f['seg'+i]?'&#9745; ':'&#9744; ')+esc(t)+'</li>'}).join('')+'</ul>';
+  var pt=S.pontos.length?'<table class="grid"><tr><th>Nº</th><th>Tipo</th><th>Parede</th><th>Altura (m)</th><th>Vazão (mL/min)</th><th>Localização</th><th>Fotos</th><th>Observações</th></tr>'+
+    S.pontos.map(function(p){return '<tr><td>P'+p.n+'</td><td>'+esc(p.tipo)+'</td><td>'+esc(p.parede)+'</td><td>'+esc(p.altura)+'</td><td>'+esc(p.vazao)+'</td><td>'+esc(p.loc)+'</td><td>'+esc(photoNums(p.id))+'</td><td>'+esc(p.obs)+'</td></tr>'}).join('')+'</table>':'<p class="none">Nenhum ponto registrado.</p>';
+  var cc=S.conc.length?'<table class="grid"><tr><th>Nº</th><th>Ocorrência</th><th>Parede</th><th>Altura (m)</th><th>Abertura (mm)</th><th>Comprimento (cm)</th><th>Estado</th><th>Fotos</th><th>Observações</th></tr>'+
+    S.conc.map(function(c){return '<tr><td>C'+c.n+'</td><td>'+esc(c.oc)+'</td><td>'+esc(c.parede)+'</td><td>'+esc(c.altura)+'</td><td>'+esc(c.abertura)+'</td><td>'+esc(c.compr)+'</td><td>'+esc(c.umid)+'</td><td>'+esc(photoNums(c.id))+'</td><td>'+esc(c.obs)+'</td></tr>'}).join('')+'</table>':'<p class="none">Nenhuma ocorrência registrada.</p>';
+  var org=ORIGEM.filter(function(o){return S.f[o[0]]}).map(function(o){return o[1]}).join(', ')||'—';
+  var gal=photos.slice().sort(function(a,b){return a.n-b.n}).map(function(p){return '<figure><img src="'+p.url+'" alt="F'+p.n+'"><figcaption>F'+p.n+' · '+esc(ownerLabel(p.owner))+'</figcaption></figure>'}).join('');
+  var css='body{font-family:Aptos,"Segoe UI",Arial,sans-serif;color:#241D1E;max-width:900px;margin:24px auto;padding:0 16px;line-height:1.4}h1{font-size:24px;color:#7A1A1A;margin:0 0 4px}h2{font-size:17px;color:#7A1A1A;border-bottom:2px solid #A8C5B0;padding-bottom:4px;margin:26px 0 10px}.org{color:#6C6163;font-size:13px;margin:0 0 16px}table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid #DCD2D3;padding:5px 8px;text-align:left;vertical-align:top}th{background:#F4EDED;font-weight:600}.kv th{width:38%}.ck{list-style:none;padding:0;margin:0;columns:1}.ck li{padding:3px 0}.none{color:#6C6163}.gal{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}figure{margin:0;break-inside:avoid}figure img{width:100%;height:auto;display:block;border:1px solid #DCD2D3}figcaption{font-size:12px;color:#6C6163;padding-top:3px}@media print{h2{break-after:avoid}table{break-inside:auto}tr{break-inside:avoid}}';
+  return '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Inspeção do poço de elevador</title><style>'+css+'</style></head><body>'+
+  '<h1>Ficha de inspeção visual · poço de elevador</h1><p class="org">A2E Engenharia Estrutural e Elétrica · CNPJ 18.218.767/0001-57</p>'+
+  '<h2>1. Identificação</h2>'+kv(OBRA)+
+  '<h2>2. Segurança antes de descer</h2>'+seg+
+  '<h2>3. Geometria e condições gerais</h2>'+kv(POCO)+
+  '<h2>4. Pontos de infiltração</h2>'+pt+'<h2>Teste de condensação</h2>'+kv(CONDF)+
+  '<h2>5. Estado do concreto e fissuras</h2>'+cc+'<h2>Percussão e medições</h2>'+kv(MEDF)+
+  '<h2>7. Croqui</h2>'+croquiSVG(PAL_EXPORT,false)+
+  '<h2>8. Síntese</h2><table class="kv"><tr><th>Origem provável da água</th><td>'+esc(org)+'</td></tr></table>'+kv(SINTF)+
+  '<h2>6. Registro fotográfico</h2>'+(gal?'<div class="gal">'+gal+'</div>':'<p class="none">Nenhuma foto anexada.</p>')+
+  '</body></html>';
+}
+function buildText(){
+  var L=[];
+  L.push('FICHA DE INSPEÇÃO · POÇO DE ELEVADOR');
+  OBRA.forEach(function(d){if(val(d))L.push(d[1].split(' (')[0]+': '+val(d))});
+  L.push('');L.push('Segurança: '+segCount()+'/'+SEG.length+' itens marcados');
+  L.push('');L.push('POÇO');
+  POCO.forEach(function(d){if(val(d))L.push('- '+d[1]+': '+val(d))});
+  L.push('');L.push('PONTOS DE INFILTRAÇÃO ('+S.pontos.length+')');
+  S.pontos.forEach(function(p){L.push('P'+p.n+' | '+[p.tipo,p.parede&&('parede '+p.parede),p.altura&&(p.altura+' m'),p.vazao&&(p.vazao+' mL/min'),p.loc,p.obs,photoNums(p.id)].filter(Boolean).join(' | '))});
+  L.push('');L.push('OCORRÊNCIAS NO CONCRETO ('+S.conc.length+')');
+  S.conc.forEach(function(c){L.push('C'+c.n+' | '+[c.oc,c.parede&&('parede '+c.parede),c.altura&&(c.altura+' m'),c.abertura&&(c.abertura+' mm'),c.compr&&(c.compr+' cm'),c.umid,c.obs,photoNums(c.id)].filter(Boolean).join(' | '))});
+  L.push('');L.push('SÍNTESE');
+  var org=ORIGEM.filter(function(o){return S.f[o[0]]}).map(function(o){return o[1]}).join(', ');
+  if(org)L.push('Origem provável: '+org);
+  SINTF.forEach(function(d){if(val(d))L.push(d[1]+': '+val(d))});
+  return L.join('\n');
+}
+var DL=null;
+function claudeUse(n){try{if(window.claude&&window.claude.use)return window.claude.use(n)}catch(e){}return Promise.resolve(null)}
+claudeUse('downloads').then(function(d){DL=d;$('#btnReport').hidden=!d}).catch(function(){DL=null});
+$('#btnReport').addEventListener('click',function(){
+  if(!DL)return;
+  var day=(S.f.data||'').slice(0,10)||'sem-data';
+  DL.save({filename:'Inspecao_Poco_Elevador_'+day+'.html',data:buildReport()}).then(function(){toast('Relatório salvo.')}).catch(function(err){
+    if(err&&err.code==='declined')return;
+    toast('Não foi possível salvar o relatório neste modo de exibição.');
+  });
+});
+$('#btnCopy').addEventListener('click',function(){
+  var text=buildText(),fb=$('#fallback');
+  function manual(){fb.style.display='block';fb.value=text;fb.focus();fb.select();toast('Selecione o texto e copie.')}
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(function(){fb.style.display='none';toast('Resumo copiado.')},manual)}
+    else manual();
+  }catch(e){manual()}
+});
+var resetArm=null;
+$('#btnReset').addEventListener('click',function(){
+  var b=this;
+  if(resetArm){
+    try{localStorage.removeItem(KEY)}catch(e){}
+    idbClear();photos=[];S=blank();S.f.data=nowLocal();
+    ['f-obra','f-poco','f-cond','f-med','f-sint'].forEach(function(id){var d={'f-obra':OBRA,'f-poco':POCO,'f-cond':CONDF,'f-med':MEDF,'f-sint':SINTF}[id];mountFields(id,d)});
+    $$('#segchecks input,#origin input').forEach(function(i){i.checked=false});
+    renderList('pontos');renderList('conc');renderAllThumbs();renderCroqui();updateProgress();save();
+    resetArm=null;b.textContent='Iniciar nova inspeção';b.classList.remove('danger');
+    window.scrollTo(0,0);toast('Nova inspeção iniciada.');return;
+  }
+  resetArm=true;b.textContent='Confirmar: apaga dados e fotos deste aparelho';b.classList.add('danger');
+  setTimeout(function(){if(resetArm){resetArm=null;b.textContent='Iniciar nova inspeção';b.classList.remove('danger')}},4000);
+});
+
+/* ---------- navegação ---------- */
+var secs=$$('.sec');
+$('#pills').innerHTML=secs.map(function(s){return '<button type="button" class="pill" data-go="'+s.id+'">'+esc(s.getAttribute('data-nav'))+'</button>'}).join('');
+$('#pills').addEventListener('click',function(e){var b=e.target.closest('[data-go]');if(b){document.getElementById(b.getAttribute('data-go')).scrollIntoView({block:'start'})}});
+if('IntersectionObserver' in window){
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){if(en.isIntersecting){
+      $$('.pill').forEach(function(p){var on=p.getAttribute('data-go')===en.target.id;p.setAttribute('aria-current',on?'true':'false');if(on&&p.scrollIntoView)p.scrollIntoView({inline:'center',block:'nearest'})});
+    }});
+  },{rootMargin:'-160px 0px -60% 0px'});
+  secs.forEach(function(s){io.observe(s)});
+}
+
+/* ---------- partida ---------- */
+renderList('pontos');renderList('conc');renderCroqui();updateProgress();setSaveStatus();
+$('#f-obra [data-f="data"]').value=S.f.data;
+save();
+idbOpen().then(function(d){idb=d;return idbAll()}).then(function(list){
+  photos=list.sort(function(a,b){return a.n-b.n});
+  var mx=photos.reduce(function(m,p){return Math.max(m,p.n)},0);if(mx>S.ph)S.ph=mx;
+  renderAllThumbs();updateProgress();
+});
+})();
+</script>
+
+</body></html>
